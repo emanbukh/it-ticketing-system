@@ -1,0 +1,62 @@
+services:
+  - type: pserv
+    runtime: image
+    name: it-ticketing-mysql
+    plan: starter
+    region: singapore
+    image:
+      url: docker.io/library/mysql:8.4
+    envVars:
+      - key: MYSQL_DATABASE
+        value: it_ticketing
+      - key: MYSQL_USER
+        value: ticket_user
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+
+  - type: web
+    runtime: docker
+    name: it-ticketing-web
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SEED_ON_START
+        value: "false"
+      - key: MYSQL_HOST
+        fromService:
+          type: pserv
+          name: it-ticketing-mysql
+          property: host
+      - key: MYSQL_PORT
+        fromService:
+          type: pserv
+          name: it-ticketing-mysql
+          property: port
+      - key: MYSQL_DATABASE
+        fromService:
+          type: pserv
+          name: it-ticketing-mysql
+          envVarKey: MYSQL_DATABASE
+      - key: MYSQL_USER
+        fromService:
+          type: pserv
+          name: it-ticketing-mysql
+          envVarKey: MYSQL_USER
+      - key: MYSQL_PASSWORD
+        fromService:
+          type: pserv
+          name: it-ticketing-mysql
+          envVarKey: MYSQL_PASSWORD

@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TicketCategory {
+  NETWORKING
+  SKY
+  EMAIL
+  ASSET
+  REQUEST
+}
+
+enum TicketStatus {
+  PENDING
+  SOLVED
+}
+
+enum HistoryAction {
+  CREATED
+  USER_REPLY
+  ADMIN_REPLY
+  STATUS_CHANGED
+  PROFILE_UPDATED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  staffId        String?         @unique
+  username       String?         @unique
+  passwordHash   String?
+  role           Role            @default(USER)
+  tickets        Ticket[]
+  replies        TicketReply[]
+  historyEntries TicketHistory[] @relation("HistoryActor")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([role])
+  @@index([name])
+}
+
+model Ticket {
+  id          String          @id @default(cuid())
+  ticketNumber String         @unique
+  userId      String
+  category    TicketCategory
+  subject     String
+  description String          @db.Text
+  status      TicketStatus    @default(PENDING)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies     TicketReply[]
+  history     TicketHistory[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, category])
+  @@index([subject])
+}
+
+model TicketReply {
+  id         String   @id @default(cuid())
+  ticketId   String
+  senderId   String
+  senderRole Role
+  message    String   @db.Text
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([senderRole])
+}
+
+model TicketHistory {
+  id             String        @id @default(cuid())
+  ticketId        String
+  action          HistoryAction
+  oldStatus       TicketStatus?
+  newStatus       TicketStatus?
+  changedById     String?
+  changedByLabel  String
+  details         String?      @db.Text
+  ticket          Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy       User?        @relation("HistoryActor", fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([action, createdAt])
+}
