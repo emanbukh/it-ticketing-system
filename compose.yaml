@@ -1,22 +1,29 @@
 services:
   db:
-    image: mysql:8.4
+    image: postgres:16
     container_name: it-ticketing-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: it_ticketing
-      MYSQL_USER: ticket_user
-      MYSQL_PASSWORD: ticket_pass
+      POSTGRES_DB: it_ticketing
+      POSTGRES_USER: ticket_user
+      POSTGRES_PASSWORD: ticket_pass
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      test: ["CMD-SHELL", "pg_isready -U ticket_user -d it_ticketing"]
       interval: 10s
       timeout: 5s
       retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: it-ticketing-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
   web:
     build:
@@ -28,12 +35,22 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://ticket_user:ticket_pass@db:3306/it_ticketing
-      SESSION_SECRET: docker-desktop-demo-secret-change-me
+      DATABASE_URL: postgresql://ticket_user:ticket_pass@db:5432/it_ticketing
+      SESSION_SECRET: docker-desktop-demo-secret-change-me-to-32-plus-chars
+      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: 10000000-ffff-ffff-ffff-000000000001
+      HCAPTCHA_SECRET: 0x0000000000000000000000000000000000000000
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_USER: dev
+      SMTP_PASS: dev
+      MAIL_FROM: IT Ticketing <no-reply@local.test>
       SEED_ON_START: "true"
       PORT: 3000
     ports:
       - "3000:3000"
+    volumes:
+      - uploads_data:/app/uploads
 
 volumes:
-  mysql_data:
+  postgres_data:
+  uploads_data:

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { loginUserAction } from "@/lib/actions/auth";
 import { Alert } from "@/components/shared/alert";
+import { HcaptchaWidget } from "@/components/forms/hcaptcha-widget";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
 import type { ActionState } from "@/types";
@@ -31,6 +32,7 @@ export function UserLoginForm() {
           <p className="text-sm text-rose-600">{state.errors.staffId[0]}</p>
         ) : null}
       </div>
+      <HcaptchaWidget />
       <SubmitButton label="Access User Portal" pendingLabel="Signing in..." className="w-full" />
       <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
         Demo account: <span className="font-semibold text-slate-900">Nurul Huda / STF1001</span>

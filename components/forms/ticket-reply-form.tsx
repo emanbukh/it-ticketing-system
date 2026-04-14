@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import type { ActionState } from "@/types";
 import { Alert } from "@/components/shared/alert";
 import { SubmitButton } from "@/components/forms/submit-button";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/forms/rich-text-editor";
 
 type TicketReplyFormProps = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -26,7 +26,7 @@ export function TicketReplyForm({ action, buttonLabel, pendingLabel }: TicketRep
         <label htmlFor="message" className="text-sm font-medium text-slate-700">
           Reply Message
         </label>
-        <Textarea id="message" name="message" placeholder="Share your update or next action." />
+        <RichTextEditor name="message" placeholder="Share your update, attach screenshots, or upload a PDF." minHeight={220} />
         {state.errors?.message ? (
           <p className="text-sm text-rose-600">{state.errors.message[0]}</p>
         ) : null}

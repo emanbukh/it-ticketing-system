@@ -1,23 +1,23 @@
 services:
   - type: pserv
     runtime: image
-    name: it-ticketing-mysql
+    name: it-ticketing-postgres
     plan: starter
     region: singapore
     image:
-      url: docker.io/library/mysql:8.4
+      url: docker.io/library/postgres:16
     envVars:
-      - key: MYSQL_DATABASE
+      - key: POSTGRES_DB
         value: it_ticketing
-      - key: MYSQL_USER
+      - key: POSTGRES_USER
         value: ticket_user
-      - key: MYSQL_PASSWORD
+      - key: POSTGRES_PASSWORD
         sync: false
-      - key: MYSQL_ROOT_PASSWORD
-        sync: false
+      - key: PGDATA
+        value: /var/lib/postgresql/data/pgdata
     disk:
-      name: mysql-data
-      mountPath: /var/lib/mysql
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
       sizeGB: 10
 
   - type: web
@@ -28,35 +28,55 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /
+    disk:
+      name: uploads
+      mountPath: /app/uploads
+      sizeGB: 5
     envVars:
+      - key: UPLOAD_DIR
+        value: /app/uploads
       - key: PORT
         value: 10000
       - key: SESSION_SECRET
         generateValue: true
+      - key: NEXT_PUBLIC_HCAPTCHA_SITE_KEY
+        sync: false
+      - key: HCAPTCHA_SECRET
+        sync: false
+      - key: SMTP_HOST
+        value: smtp-relay.brevo.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
       - key: SEED_ON_START
         value: "false"
-      - key: MYSQL_HOST
+      - key: POSTGRES_HOST
         fromService:
           type: pserv
-          name: it-ticketing-mysql
+          name: it-ticketing-postgres
           property: host
-      - key: MYSQL_PORT
+      - key: POSTGRES_PORT
         fromService:
           type: pserv
-          name: it-ticketing-mysql
+          name: it-ticketing-postgres
           property: port
-      - key: MYSQL_DATABASE
+      - key: POSTGRES_DB
         fromService:
           type: pserv
-          name: it-ticketing-mysql
-          envVarKey: MYSQL_DATABASE
-      - key: MYSQL_USER
+          name: it-ticketing-postgres
+          envVarKey: POSTGRES_DB
+      - key: POSTGRES_USER
         fromService:
           type: pserv
-          name: it-ticketing-mysql
-          envVarKey: MYSQL_USER
-      - key: MYSQL_PASSWORD
+          name: it-ticketing-postgres
+          envVarKey: POSTGRES_USER
+      - key: POSTGRES_PASSWORD
         fromService:
           type: pserv
-          name: it-ticketing-mysql
-          envVarKey: MYSQL_PASSWORD
+          name: it-ticketing-postgres
+          envVarKey: POSTGRES_PASSWORD

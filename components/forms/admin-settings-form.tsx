@@ -11,11 +11,12 @@ type AdminSettingsFormProps = {
   id: string;
   name: string;
   username: string;
+  email?: string | null;
 };
 
 const initialState: ActionState = {};
 
-export function AdminSettingsForm({ id, name, username }: AdminSettingsFormProps) {
+export function AdminSettingsForm({ id, name, username, email }: AdminSettingsFormProps) {
   const [state, formAction] = useActionState(updateAdminSettingsAction, initialState);
 
   return (
@@ -39,6 +40,13 @@ export function AdminSettingsForm({ id, name, username }: AdminSettingsFormProps
         {state.errors?.username ? (
           <p className="text-sm text-rose-600">{state.errors.username[0]}</p>
         ) : null}
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="email" className="text-sm font-medium text-slate-700">
+          Email <span className="text-slate-400">(for notifications)</span>
+        </label>
+        <Input id="email" name="email" type="email" defaultValue={email ?? ""} placeholder="it-admin@company.com" />
+        {state.errors?.email ? <p className="text-sm text-rose-600">{state.errors.email[0]}</p> : null}
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">

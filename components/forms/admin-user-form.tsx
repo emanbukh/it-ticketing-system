@@ -13,11 +13,12 @@ type AdminUserFormProps = {
   id?: string;
   name?: string;
   staffId?: string;
+  email?: string | null;
 };
 
 const initialState: ActionState = {};
 
-export function AdminUserForm({ title, description, id, name, staffId }: AdminUserFormProps) {
+export function AdminUserForm({ title, description, id, name, staffId, email }: AdminUserFormProps) {
   const [state, formAction] = useActionState(upsertUserAction, initialState);
 
   return (
@@ -45,6 +46,13 @@ export function AdminUserForm({ title, description, id, name, staffId }: AdminUs
         {state.errors?.staffId ? (
           <p className="text-sm text-rose-600">{state.errors.staffId[0]}</p>
         ) : null}
+      </div>
+      <div className="space-y-2">
+        <label htmlFor={`email-${id || "new"}`} className="text-sm font-medium text-slate-700">
+          Email <span className="text-slate-400">(optional)</span>
+        </label>
+        <Input id={`email-${id || "new"}`} name="email" type="email" defaultValue={email ?? ""} placeholder="user@company.com" />
+        {state.errors?.email ? <p className="text-sm text-rose-600">{state.errors.email[0]}</p> : null}
       </div>
       <div className="space-y-2">
         <label htmlFor={`password-${id || "new"}`} className="text-sm font-medium text-slate-700">

@@ -8,19 +8,25 @@ export const userLoginSchema = z.object({
 
 export const adminLoginSchema = z.object({
   username: z.string().trim().min(3, "Username is required."),
-  password: z.string().trim().min(6, "Password is required."),
+  password: z.string().trim().min(8, "Password is required."),
 });
+
+const htmlMin = (n: number, label: string) =>
+  z.string().refine(
+    (v) => v.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim().length >= n,
+    `${label} must be at least ${n} characters.`,
+  );
 
 export const ticketSchema = z.object({
   category: z.nativeEnum(TicketCategory, {
     errorMap: () => ({ message: "Please select an issue category." }),
   }),
   subject: z.string().trim().min(5, "Subject must be at least 5 characters."),
-  description: z.string().trim().min(10, "Description must be at least 10 characters."),
+  description: htmlMin(10, "Description"),
 });
 
 export const replySchema = z.object({
-  message: z.string().trim().min(2, "Reply must be at least 2 characters."),
+  message: htmlMin(2, "Reply"),
 });
 
 export const userProfileSchema = z.object({
@@ -33,12 +39,18 @@ export const userUpsertSchema = z.object({
   id: z.string().cuid().optional(),
   name: z.string().trim().min(2, "Name is required."),
   staffId: z.string().trim().min(3, "Staff ID is required."),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => v || undefined)
+    .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Enter a valid email."),
   password: z
     .string()
     .trim()
     .optional()
     .transform((value) => value || undefined)
-    .refine((value) => !value || value.length >= 6, "Password must be at least 6 characters."),
+    .refine((value) => !value || value.length >= 8, "Password must be at least 8 characters."),
 });
 
 export const adminSettingsSchema = z
@@ -46,6 +58,12 @@ export const adminSettingsSchema = z
     id: z.string().cuid(),
     name: z.string().trim().min(2, "Name is required."),
     username: z.string().trim().min(3, "Username is required."),
+    email: z
+      .string()
+      .trim()
+      .optional()
+      .transform((v) => v || undefined)
+      .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Enter a valid email."),
     currentPassword: z.string().trim().optional(),
     newPassword: z
       .string()
@@ -54,10 +72,10 @@ export const adminSettingsSchema = z
       .transform((value) => value || undefined),
   })
   .superRefine((value, ctx) => {
-    if (value.newPassword && value.newPassword.length < 6) {
+    if (value.newPassword && value.newPassword.length < 8) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "New password must be at least 6 characters.",
+        message: "New password must be at least 8 characters.",
         path: ["newPassword"],
       });
     }

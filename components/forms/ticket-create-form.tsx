@@ -3,10 +3,11 @@
 import { useActionState } from "react";
 import { createTicketAction } from "@/lib/actions/user";
 import { Alert } from "@/components/shared/alert";
+import { HcaptchaWidget } from "@/components/forms/hcaptcha-widget";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
+import { RichTextEditor } from "@/components/forms/rich-text-editor";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { categoryLabels, TICKET_CATEGORIES } from "@/lib/utils";
 import type { ActionState } from "@/types";
 
@@ -49,15 +50,15 @@ export function TicketCreateForm() {
         <label htmlFor="description" className="text-sm font-medium text-slate-700">
           Issue Description
         </label>
-        <Textarea
-          id="description"
+        <RichTextEditor
           name="description"
-          placeholder="Describe the issue, impact, location, and any troubleshooting already attempted."
+          placeholder="Describe the issue, impact, location, and any troubleshooting already attempted. Attach screenshots or PDFs as evidence."
         />
         {state.errors?.description ? (
           <p className="text-sm text-rose-600">{state.errors.description[0]}</p>
         ) : null}
       </div>
+      <HcaptchaWidget />
       <SubmitButton label="Submit Ticket" pendingLabel="Submitting..." />
     </form>
   );

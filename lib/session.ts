@@ -4,7 +4,10 @@ import type { SessionData } from "@/types";
 export const SESSION_COOKIE = "it-ticket-session";
 
 function getSecretKey() {
-  const secret = process.env.SESSION_SECRET || "development-secret-change-me";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("SESSION_SECRET env var is required and must be at least 32 characters.");
+  }
   return new TextEncoder().encode(secret);
 }
 

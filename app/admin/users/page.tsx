@@ -48,6 +48,7 @@ export default async function AdminUsersPage() {
                   id={user.id}
                   name={user.name}
                   staffId={user.staffId || ""}
+                  email={user.email}
                   title="Edit User"
                   description="Update staff information or optionally reset the user's password."
                 />

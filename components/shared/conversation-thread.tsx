@@ -62,9 +62,10 @@ export function ConversationThread({ replies }: ConversationThreadProps) {
                   {isAdmin ? "Admin" : "User"}
                 </Badge>
               </div>
-              <p className={`mt-3 whitespace-pre-line text-sm ${isAdmin ? "text-blue-50" : "text-slate-600"}`}>
-                {reply.message}
-              </p>
+              <div
+                className={`prose prose-sm mt-3 max-w-none ${isAdmin ? "prose-invert text-blue-50" : "text-slate-600"}`}
+                dangerouslySetInnerHTML={{ __html: reply.message }}
+              />
               <p className={`mt-3 text-xs ${isAdmin ? "text-blue-100" : "text-slate-400"}`}>
                 {formatDate(reply.createdAt)}
               </p>

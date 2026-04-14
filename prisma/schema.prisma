@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -38,16 +38,32 @@ model User {
   name           String
   staffId        String?         @unique
   username       String?         @unique
+  email          String?
   passwordHash   String?
   role           Role            @default(USER)
   tickets        Ticket[]
   replies        TicketReply[]
   historyEntries TicketHistory[] @relation("HistoryActor")
+  notifications  Notification[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
   @@index([role])
   @@index([name])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 model Ticket {

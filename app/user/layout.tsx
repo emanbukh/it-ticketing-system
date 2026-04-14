@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 export default async function UserLayout({ children }: { children: ReactNode }) {
   const session = await requireSession("USER");
 
-  return <UserShell userName={session.name}>{children}</UserShell>;
+  return <UserShell userName={session.name} userId={session.userId}>{children}</UserShell>;
 }

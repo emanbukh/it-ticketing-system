@@ -29,6 +29,9 @@ COPY --from=builder /app/app ./app
 COPY --from=builder /app/components ./components
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/types ./types
+RUN mkdir -p /app/uploads
+VOLUME ["/app/uploads"]
+ENV UPLOAD_DIR=/app/uploads
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 3000

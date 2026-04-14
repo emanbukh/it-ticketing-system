@@ -2,11 +2,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { AppLogo } from "@/components/shared/app-logo";
+import { NotificationBell } from "@/components/shared/notification-bell";
 import { SidebarNav } from "@/components/layouts/sidebar-nav";
 import { SubmitButton } from "@/components/forms/submit-button";
 
 type UserShellProps = {
   userName: string;
+  userId: string;
   children: ReactNode;
 };
 
@@ -17,7 +19,7 @@ const userNav = [
   { label: "Profile", href: "/user/profile" },
 ];
 
-export function UserShell({ userName, children }: UserShellProps) {
+export function UserShell({ userName, userId, children }: UserShellProps) {
   return (
     <div className="min-h-screen bg-hero-grid px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-[260px_1fr]">
@@ -43,7 +45,12 @@ export function UserShell({ userName, children }: UserShellProps) {
             </form>
           </div>
         </aside>
-        <section className="space-y-6">{children}</section>
+        <section className="space-y-6">
+          <div className="flex justify-end">
+            <NotificationBell userId={userId} />
+          </div>
+          {children}
+        </section>
       </div>
     </div>
   );

@@ -56,7 +56,10 @@ export default async function UserTicketDetailPage({
             </div>
             <div className="mt-6 rounded-3xl bg-slate-50 p-5">
               <p className="text-sm font-semibold text-slate-900">Issue Description</p>
-              <p className="mt-3 whitespace-pre-line text-sm text-slate-600">{ticket.description}</p>
+              <div
+                className="prose prose-sm mt-3 max-w-none text-slate-600"
+                dangerouslySetInnerHTML={{ __html: ticket.description }}
+              />
             </div>
           </Card>
 

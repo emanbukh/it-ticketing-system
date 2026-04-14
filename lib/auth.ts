@@ -11,7 +11,7 @@ export async function setSessionCookie(session: SessionData) {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
@@ -22,7 +22,7 @@ export async function clearSessionCookie() {
   cookieStore.set(SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     path: "/",
     maxAge: 0,
   });
@@ -50,7 +50,7 @@ export async function requireSession(role?: Role) {
 }
 
 export async function hashPassword(value: string) {
-  return bcrypt.hash(value, 10);
+  return bcrypt.hash(value, 12);
 }
 
 export async function comparePassword(value: string, hash?: string | null) {

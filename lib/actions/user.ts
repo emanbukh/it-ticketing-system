@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession, setSessionCookie } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { verifyHcaptcha } from "@/lib/hcaptcha";
+import { notifyTicketCreated } from "@/lib/notifications";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { generateTicketNumber } from "@/lib/tickets";
 import {
   replySchema,
@@ -31,6 +34,11 @@ export async function createTicketAction(_: ActionState, formData: FormData): Pr
     };
   }
 
+  const captchaOk = await verifyHcaptcha(String(formData.get("h-captcha-response") || ""));
+  if (!captchaOk) {
+    return { success: false, message: "Captcha verification failed. Please try again." };
+  }
+
   const ticket = await prisma.$transaction(async (tx) => {
     const ticketNumber = await generateTicketNumber(tx);
 
@@ -40,7 +48,7 @@ export async function createTicketAction(_: ActionState, formData: FormData): Pr
         userId: session.userId,
         category: parsed.data.category,
         subject: parsed.data.subject,
-        description: parsed.data.description,
+        description: sanitizeHtml(parsed.data.description),
         status: TicketStatus.PENDING,
       },
     });
@@ -57,6 +65,14 @@ export async function createTicketAction(_: ActionState, formData: FormData): Pr
     });
 
     return createdTicket;
+  });
+
+  await notifyTicketCreated({
+    id: ticket.id,
+    ticketNumber: ticket.ticketNumber,
+    subject: ticket.subject,
+    userName: session.name,
+    category: ticket.category,
   });
 
   revalidatePath("/user/dashboard");
@@ -108,7 +124,7 @@ export async function replyToTicketAction(
         ticketId,
         senderId: session.userId,
         senderRole: Role.USER,
-        message: parsed.data.message,
+        message: sanitizeHtml(parsed.data.message),
       },
     });
 

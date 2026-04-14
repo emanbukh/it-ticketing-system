@@ -34,7 +34,7 @@ export default async function AdminSettingsPage() {
             Change your display name, username, or password from here.
           </CardDescription>
           <div className="mt-6">
-            <AdminSettingsForm id={admin.id} name={admin.name} username={admin.username} />
+            <AdminSettingsForm id={admin.id} name={admin.name} username={admin.username} email={admin.email} />
           </div>
         </Card>
 

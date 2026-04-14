@@ -4,6 +4,8 @@ import { HistoryAction, Role, TicketStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { comparePassword, hashPassword, requireSession, setSessionCookie } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyTicketClosed } from "@/lib/notifications";
+import { sanitizeHtml } from "@/lib/sanitize";
 import {
   adminSettingsSchema,
   replySchema,
@@ -48,7 +50,7 @@ export async function replyAsAdminAction(
         ticketId,
         senderId: session.userId,
         senderRole: Role.ADMIN,
-        message: parsed.data.message,
+        message: sanitizeHtml(parsed.data.message),
       },
     });
 
@@ -136,6 +138,16 @@ export async function updateTicketStatusAction(
     });
   });
 
+  if (parsed.data.status === TicketStatus.SOLVED && ticket.status !== TicketStatus.SOLVED) {
+    await notifyTicketClosed({
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticketNumber,
+      subject: ticket.subject,
+      ownerUserId: ticket.userId,
+      closedBy: session.name,
+    });
+  }
+
   revalidatePath(`/admin/tickets/${ticket.id}`);
   revalidatePath("/admin/tickets");
   revalidatePath("/admin/history");
@@ -156,6 +168,7 @@ export async function upsertUserAction(_: ActionState, formData: FormData): Prom
     id: String(formData.get("id") || "") || undefined,
     name: String(formData.get("name") || ""),
     staffId: String(formData.get("staffId") || ""),
+    email: String(formData.get("email") || "") || undefined,
     password: String(formData.get("password") || "") || undefined,
   };
 
@@ -190,6 +203,7 @@ export async function upsertUserAction(_: ActionState, formData: FormData): Prom
       data: {
         name: parsed.data.name,
         staffId: parsed.data.staffId,
+        email: parsed.data.email ?? null,
         ...(passwordHash ? { passwordHash } : {}),
       },
     });
@@ -198,6 +212,7 @@ export async function upsertUserAction(_: ActionState, formData: FormData): Prom
       data: {
         name: parsed.data.name,
         staffId: parsed.data.staffId,
+        email: parsed.data.email ?? null,
         passwordHash,
         role: Role.USER,
       },
@@ -221,6 +236,7 @@ export async function updateAdminSettingsAction(
     id: String(formData.get("id") || ""),
     name: String(formData.get("name") || ""),
     username: String(formData.get("username") || ""),
+    email: String(formData.get("email") || "") || undefined,
     currentPassword: String(formData.get("currentPassword") || ""),
     newPassword: String(formData.get("newPassword") || ""),
   };
@@ -281,9 +297,21 @@ export async function updateAdminSettingsAction(
     data: {
       name: parsed.data.name,
       username: parsed.data.username,
+      email: parsed.data.email ?? null,
       ...(parsed.data.newPassword ? { passwordHash: await hashPassword(parsed.data.newPassword) } : {}),
     },
   });
+
+  if (parsed.data.newPassword) {
+    console.info(
+      JSON.stringify({
+        event: "admin_password_changed",
+        at: new Date().toISOString(),
+        adminId: session.userId,
+        adminUsername: updated.username,
+      }),
+    );
+  }
 
   await setSessionCookie({
     userId: updated.id,

@@ -5,7 +5,7 @@ A complete starter web application for an internal IT Ticketing Information Syst
 - Next.js App Router
 - Tailwind CSS
 - Prisma ORM
-- MySQL
+- PostgreSQL
 - Custom JWT cookie session authentication
 
 It includes two protected portals:
@@ -73,7 +73,7 @@ It includes two protected portals:
 Copy `.env.example` to `.env` and update the values:
 
 ```env
-DATABASE_URL="mysql://root:password@localhost:3306/it_ticketing"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/it_ticketing"
 SESSION_SECRET="change-this-to-a-long-random-secret"
 ```
 
@@ -85,7 +85,7 @@ npm install
 
 ## Prisma Setup
 
-1. Create the MySQL database:
+1. Create the PostgreSQL database:
 
 ```sql
 CREATE DATABASE it_ticketing;
@@ -141,14 +141,14 @@ docker compose up --build
 Then open:
 
 - App: [http://localhost:3000](http://localhost:3000)
-- MySQL: `localhost:3306`
+- Postgres: `localhost:5432`
 
 What happens on startup:
 
-- MySQL starts in its own container
+- Postgres starts in its own container
 - The Next.js app container builds and starts
 - Prisma client is generated
-- Prisma schema is pushed to MySQL
+- Prisma schema is pushed to Postgres
 - Demo seed data is inserted automatically
 
 To stop the stack:
@@ -172,13 +172,13 @@ This repo now includes a Render Blueprint file:
 It provisions:
 
 - A public Render web service for the Next.js app
-- A private Render MySQL service using the official `mysql:8.4` image
+- A private Render Postgres service using the official `mysql:8.4` image
 - A persistent disk mounted at `/var/lib/mysql`
 
 ### Important Render Notes
 
 - Render supports Docker-based web services officially.
-- Render also supports MySQL by running it as a private service with a persistent disk.
+- Render also supports Postgres by running it as a private service with a persistent disk.
 - The web app builds `DATABASE_URL` at startup from linked `MYSQL_*` variables because Render Blueprints do not support variable interpolation directly.
 
 ### Render Publish Steps

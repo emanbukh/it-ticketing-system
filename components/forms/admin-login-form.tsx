@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { loginAdminAction } from "@/lib/actions/auth";
 import { Alert } from "@/components/shared/alert";
+import { HcaptchaWidget } from "@/components/forms/hcaptcha-widget";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
 import type { ActionState } from "@/types";
@@ -33,6 +34,7 @@ export function AdminLoginForm() {
           <p className="text-sm text-rose-600">{state.errors.password[0]}</p>
         ) : null}
       </div>
+      <HcaptchaWidget />
       <SubmitButton label="Access Admin Console" pendingLabel="Signing in..." className="w-full" />
       <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
         Demo admin: <span className="font-semibold text-slate-900">itadmin / admin123</span>

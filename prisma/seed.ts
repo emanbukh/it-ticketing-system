@@ -25,6 +25,7 @@ async function main() {
     data: {
       name: "Aina Rahman",
       username: "itadmin",
+      email: "itadmin@example.com",
       passwordHash: adminPassword,
       role: Role.ADMIN,
     },
@@ -34,6 +35,7 @@ async function main() {
     data: {
       name: "Faizal Support",
       username: "helpdesk",
+      email: "helpdesk@example.com",
       passwordHash: supportPassword,
       role: Role.ADMIN,
     },

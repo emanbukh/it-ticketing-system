@@ -1,15 +1,15 @@
 #!/bin/sh
 set -e
 
-if [ -z "$DATABASE_URL" ] && [ -n "$MYSQL_HOST" ] && [ -n "$MYSQL_PORT" ] && [ -n "$MYSQL_DATABASE" ] && [ -n "$MYSQL_USER" ] && [ -n "$MYSQL_PASSWORD" ]; then
-  echo "Composing DATABASE_URL from MYSQL_* environment variables..."
-  export DATABASE_URL="$(node -e "const e=encodeURIComponent; process.stdout.write(\`mysql://\${e(process.env.MYSQL_USER)}:\${e(process.env.MYSQL_PASSWORD)}@\${process.env.MYSQL_HOST}:\${process.env.MYSQL_PORT}/\${process.env.MYSQL_DATABASE}\`)")"
+if [ -z "$DATABASE_URL" ] && [ -n "$POSTGRES_HOST" ] && [ -n "$POSTGRES_PORT" ] && [ -n "$POSTGRES_DB" ] && [ -n "$POSTGRES_USER" ] && [ -n "$POSTGRES_PASSWORD" ]; then
+  echo "Composing DATABASE_URL from POSTGRES_* environment variables..."
+  export DATABASE_URL="$(node -e "const e=encodeURIComponent; process.stdout.write(\`postgresql://\${e(process.env.POSTGRES_USER)}:\${e(process.env.POSTGRES_PASSWORD)}@\${process.env.POSTGRES_HOST}:\${process.env.POSTGRES_PORT}/\${process.env.POSTGRES_DB}\`)")"
 fi
 
 echo "Generating Prisma client..."
 npx prisma generate
 
-echo "Waiting for MySQL and pushing Prisma schema..."
+echo "Waiting for Postgres and pushing Prisma schema..."
 attempt=1
 until npx prisma db push --accept-data-loss; do
   if [ "$attempt" -ge 20 ]; then
