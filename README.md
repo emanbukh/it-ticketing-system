@@ -13,6 +13,36 @@ It includes two protected portals:
 - `USER` portal for staff users
 - `ADMIN` portal for IT administrators
 
+## Screenshots
+
+### Staff (user) portal
+
+| Login | Dashboard |
+| :---: | :---: |
+| ![User login](docs/screenshots/login-user.png) | ![User dashboard](docs/screenshots/user-dashboard.png) |
+
+| Create ticket (rich text + attachments) | My tickets |
+| :---: | :---: |
+| ![Create ticket](docs/screenshots/user-ticket-new.png) | ![User tickets](docs/screenshots/user-tickets.png) |
+
+| Ticket detail |
+| :---: |
+| ![User ticket detail](docs/screenshots/user-ticket-detail.png) |
+
+### Admin portal
+
+| Login | Dashboard |
+| :---: | :---: |
+| ![Admin login](docs/screenshots/login-admin.png) | ![Admin dashboard](docs/screenshots/admin-dashboard.png) |
+
+| Tickets list | Ticket detail |
+| :---: | :---: |
+| ![Admin tickets](docs/screenshots/admin-tickets.png) | ![Admin ticket detail](docs/screenshots/admin-ticket-detail.png) |
+
+| History (audit trail) | User management |
+| :---: | :---: |
+| ![Admin history](docs/screenshots/admin-history.png) | ![Admin users](docs/screenshots/admin-users.png) |
+
 ## Features
 
 - Staff login with `name + staff ID`
