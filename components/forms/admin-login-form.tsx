@@ -36,9 +36,6 @@ export function AdminLoginForm() {
       </div>
       <HcaptchaWidget />
       <SubmitButton label="Access Admin Console" pendingLabel="Signing in..." className="w-full" />
-      <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-        Demo admin: <span className="font-semibold text-slate-900">itadmin / admin123</span>
-      </div>
     </form>
   );
 }

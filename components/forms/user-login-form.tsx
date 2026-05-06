@@ -34,9 +34,6 @@ export function UserLoginForm() {
       </div>
       <HcaptchaWidget />
       <SubmitButton label="Access User Portal" pendingLabel="Signing in..." className="w-full" />
-      <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-        Demo account: <span className="font-semibold text-slate-900">Nurul Huda / STF1001</span>
-      </div>
     </form>
   );
 }

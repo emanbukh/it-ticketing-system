@@ -59,7 +59,7 @@ export default async function AdminTicketDetailPage({
               <div className="rounded-3xl bg-slate-50 p-5">
                 <p className="text-sm font-semibold text-slate-900">Ticket Description</p>
                 <div
-                  className="prose prose-sm mt-3 max-w-none text-slate-600"
+                  className="rich-content mt-3 text-sm text-slate-600"
                   dangerouslySetInnerHTML={{ __html: ticket.description }}
                 />
               </div>

@@ -63,7 +63,7 @@ export function ConversationThread({ replies }: ConversationThreadProps) {
                 </Badge>
               </div>
               <div
-                className={`prose prose-sm mt-3 max-w-none ${isAdmin ? "prose-invert text-blue-50" : "text-slate-600"}`}
+                className={`rich-content mt-3 text-sm ${isAdmin ? "on-dark text-blue-50" : "text-slate-600"}`}
                 dangerouslySetInnerHTML={{ __html: reply.message }}
               />
               <p className={`mt-3 text-xs ${isAdmin ? "text-blue-100" : "text-slate-400"}`}>

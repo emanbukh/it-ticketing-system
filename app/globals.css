@@ -38,3 +38,47 @@ select {
 ::selection {
   background: rgba(59, 130, 246, 0.18);
 }
+
+/* Styling for user-submitted rich content (ticket description, replies) */
+.rich-content {
+  word-break: break-word;
+}
+.rich-content a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-content a:hover {
+  color: #1d4ed8;
+}
+.rich-content.on-dark a {
+  color: #bfdbfe;
+}
+.rich-content.on-dark a:hover {
+  color: #ffffff;
+}
+.rich-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 0.5rem 0;
+}
+.rich-content p {
+  margin: 0 0 0.5rem 0;
+}
+.rich-content ul,
+.rich-content ol {
+  margin: 0.25rem 0 0.5rem 1.25rem;
+}
+.rich-content code {
+  background: rgba(15, 23, 42, 0.08);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+.rich-content pre {
+  background: rgba(15, 23, 42, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
