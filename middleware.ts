@@ -2,6 +2,35 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
+const CSRF_COOKIE = "csrf_token";
+
+/**
+ * Generate cryptographically secure random token for Edge runtime
+ * Uses Web Crypto API instead of Node.js crypto module
+ */
+function generateSecureToken(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function setCSRFToken(res: NextResponse) {
+  // Only set if not already present
+  if (!res.cookies.get(CSRF_COOKIE)) {
+    const token = generateSecureToken();
+    res.cookies.set(CSRF_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60, // 1 hour
+    });
+  }
+  return res;
+}
+
 function applySecurityHeaders(res: NextResponse) {
   const csp = [
     "default-src 'self'",
@@ -31,29 +60,36 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = token ? await verifySessionToken(token) : null;
 
+  let response: NextResponse;
+
   if (pathname.startsWith("/user")) {
     if (!session || session.role !== "USER") {
-      return applySecurityHeaders(NextResponse.redirect(new URL("/login/user", request.url)));
+      response = NextResponse.redirect(new URL("/login/user", request.url));
+      return applySecurityHeaders(setCSRFToken(response));
     }
   }
 
   if (pathname.startsWith("/admin")) {
     if (!session || session.role !== "ADMIN") {
-      return applySecurityHeaders(NextResponse.redirect(new URL("/login/admin", request.url)));
+      response = NextResponse.redirect(new URL("/login/admin", request.url));
+      return applySecurityHeaders(setCSRFToken(response));
     }
   }
 
   if (pathname.startsWith("/login")) {
     if (session?.role === "USER") {
-      return applySecurityHeaders(NextResponse.redirect(new URL("/user/dashboard", request.url)));
+      response = NextResponse.redirect(new URL("/user/dashboard", request.url));
+      return applySecurityHeaders(setCSRFToken(response));
     }
 
     if (session?.role === "ADMIN") {
-      return applySecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)));
+      response = NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      return applySecurityHeaders(setCSRFToken(response));
     }
   }
 
-  return applySecurityHeaders(NextResponse.next());
+  response = NextResponse.next();
+  return applySecurityHeaders(setCSRFToken(response));
 }
 
 export const config = {

@@ -12,7 +12,7 @@ export default async function UserProfilePage() {
     where: { id: session.userId },
   });
 
-  if (!user || !user.staffId) {
+  if (!user) {
     notFound();
   }
 
@@ -46,9 +46,14 @@ export default async function UserProfilePage() {
           <CardTitle>Update Profile</CardTitle>
           <CardDescription className="mt-1">
             Changes are reflected in your user portal session immediately after saving.
+            {!user.staffId && (
+              <p className="mt-2 text-amber-600">
+                ⚠️ You haven't added a Staff ID yet. Adding one helps us identify you faster.
+              </p>
+            )}
           </CardDescription>
           <div className="mt-6">
-            <ProfileForm id={user.id} name={user.name} staffId={user.staffId} />
+            <ProfileForm id={user.id} name={user.name} staffId={user.staffId || ""} />
           </div>
         </Card>
       </div>

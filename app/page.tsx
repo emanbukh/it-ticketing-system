@@ -38,13 +38,7 @@ export default async function HomePage() {
                 href="/login/user"
                 className="rounded-2xl bg-navy px-6 py-3 text-sm font-semibold text-white shadow-soft"
               >
-                Open User Portal
-              </Link>
-              <Link
-                href="/login/admin"
-                className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700"
-              >
-                Open Admin Console
+                Sign In
               </Link>
             </div>
           </section>

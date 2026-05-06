@@ -1,59 +1,85 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { AdminUserForm } from "@/components/forms/admin-user-form";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { getUsers } from "@/lib/tickets";
-import { formatDate } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
+import { UsersTable } from "./users-table";
 
-export default async function AdminUsersPage() {
-  const users = await getUsers();
+const USERS_PER_PAGE = 10;
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; edit?: string }>;
+}) {
+  const { page: pageParam, edit: editId } = await searchParams;
+  const currentPage = Number(pageParam) || 1;
+  const skip = (currentPage - 1) * USERS_PER_PAGE;
+
+  // Get total count
+  const totalCount = await prisma.user.count({
+    where: { role: "USER" },
+  });
+
+  // Get paginated users
+  const users = await prisma.user.findMany({
+    where: { role: "USER" },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      staffId: true,
+      email: true,
+      role: true,
+      googleId: true,
+      createdAt: true,
+    },
+    skip,
+    take: USERS_PER_PAGE,
+  });
+
+  const totalPages = Math.ceil(totalCount / USERS_PER_PAGE);
 
   return (
     <>
       <PageHeader
         eyebrow="User Management"
         title="Manage Staff Users"
-        description="Add new staff accounts, update staff IDs, and reset passwords when required."
+        description="Add new staff accounts, update staff IDs, and manage user access."
       />
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardTitle>Add New User</CardTitle>
+      
+      <div className="grid gap-6 xl:grid-cols-[1fr_2fr]">
+        {/* Add/Edit User Form */}
+        <Card className={editId ? "ring-2 ring-blue-500" : ""}>
+          <CardTitle>{editId ? "Edit User" : "Add New User"}</CardTitle>
           <CardDescription className="mt-1">
-            Create a new staff user record for the internal portal.
+            {editId 
+              ? "Update staff information or optionally reset the user's password."
+              : "Create a new staff user record for the internal portal."
+            }
           </CardDescription>
           <div className="mt-6">
             <AdminUserForm
-              title="New Staff User"
-              description="Enter the staff details below to create a new user."
+              key={editId || "new"}
+              title={editId ? "Edit Staff User" : "New Staff User"}
+              description=""
             />
           </div>
         </Card>
 
+        {/* Users Table */}
         <Card>
           <CardTitle>Existing Staff Users</CardTitle>
           <CardDescription className="mt-1">
-            Edit user details directly from the current list.
+            {totalCount} user{totalCount !== 1 ? "s" : ""} found. Edit or manage access.
           </CardDescription>
-          <div className="mt-6 space-y-4">
-            {users.map((user) => (
-              <div key={user.id} className="rounded-3xl border border-slate-200 p-5">
-                <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">{user.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Staff ID {user.staffId || "-"} • Added {formatDate(user.createdAt)}
-                    </p>
-                  </div>
-                </div>
-                <AdminUserForm
-                  id={user.id}
-                  name={user.name}
-                  staffId={user.staffId || ""}
-                  email={user.email}
-                  title="Edit User"
-                  description="Update staff information or optionally reset the user's password."
-                />
-              </div>
-            ))}
+          <div className="mt-6">
+            <UsersTable
+              users={users}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              editId={editId || null}
+              basePath="/admin/users"
+            />
           </div>
         </Card>
       </div>

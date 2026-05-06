@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
+import { StaffIdModal } from "@/components/shared/staff-id-modal";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireSession } from "@/lib/auth";
 import { getUserDashboard } from "@/lib/tickets";
+import { prisma } from "@/lib/prisma";
 import {
   categoryLabels,
   categoryTone,
@@ -17,6 +19,14 @@ import {
 export default async function UserDashboardPage() {
   const session = await requireSession("USER");
   const data = await getUserDashboard(session.userId);
+  
+  // Fetch user to check if they have staffId
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { staffId: true, name: true },
+  });
+  
+  const showStaffIdModal = !user?.staffId;
 
   return (
     <>
@@ -97,6 +107,10 @@ export default async function UserDashboardPage() {
           </div>
         )}
       </Card>
+      
+      {showStaffIdModal && (
+        <StaffIdModal userId={session.userId} currentName={session.name} />
+      )}
     </>
   );
 }

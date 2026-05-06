@@ -13,6 +13,7 @@ import {
   userUpsertSchema,
   zodErrors,
 } from "@/lib/validations";
+import { validateCSRFToken } from "@/lib/csrf";
 import type { ActionState } from "@/types";
 
 export async function replyAsAdminAction(
@@ -21,6 +22,12 @@ export async function replyAsAdminAction(
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const parsed = replySchema.safeParse({
     message: String(formData.get("message") || ""),
   });
@@ -85,6 +92,12 @@ export async function updateTicketStatusAction(
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const values = {
     ticketId: String(formData.get("ticketId") || ""),
     status: String(formData.get("status") || ""),
@@ -164,6 +177,12 @@ export async function updateTicketStatusAction(
 
 export async function upsertUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
   await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const values = {
     id: String(formData.get("id") || "") || undefined,
     name: String(formData.get("name") || ""),
@@ -232,6 +251,12 @@ export async function updateAdminSettingsAction(
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const values = {
     id: String(formData.get("id") || ""),
     name: String(formData.get("name") || ""),
@@ -326,5 +351,81 @@ export async function updateAdminSettingsAction(
   return {
     success: true,
     message: "Admin settings updated successfully.",
+  };
+}
+
+export async function deleteUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
+  
+  const userId = String(formData.get("userId") || "");
+  
+  if (!userId) {
+    return { success: false, message: "Invalid user ID." };
+  }
+  
+  // Prevent deleting yourself
+  if (userId === session.userId) {
+    return { success: false, message: "You cannot delete your own account." };
+  }
+  
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  
+  if (!user) {
+    return { success: false, message: "User not found." };
+  }
+  
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+  
+  revalidatePath("/admin/users");
+  
+  return {
+    success: true,
+    message: `User ${user.name} has been deleted.`,
+  };
+}
+
+export async function bulkDeleteUsersAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireSession("ADMIN");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
+  
+  const userIds = formData.getAll("userIds[]") as string[];
+  
+  if (!userIds || userIds.length === 0) {
+    return { success: false, message: "No users selected." };
+  }
+  
+  // Prevent deleting yourself
+  if (userIds.includes(session.userId)) {
+    return { success: false, message: "You cannot delete your own account." };
+  }
+  
+  // Delete all selected users
+  await prisma.user.deleteMany({
+    where: {
+      id: { in: userIds },
+      role: Role.USER, // Only allow deleting users, not admins
+    },
+  });
+  
+  revalidatePath("/admin/users");
+  
+  return {
+    success: true,
+    message: `${userIds.length} user(s) deleted successfully.`,
   };
 }

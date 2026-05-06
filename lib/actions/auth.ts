@@ -8,12 +8,19 @@ import { prisma } from "@/lib/prisma";
 import { verifyHcaptcha } from "@/lib/hcaptcha";
 import { rateLimit } from "@/lib/rate-limit";
 import { adminLoginSchema, userLoginSchema, zodErrors } from "@/lib/validations";
+import { validateCSRFToken } from "@/lib/csrf";
 import type { ActionState } from "@/types";
 
 export async function loginUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
   const rl = await rateLimit("login-user", { limit: 5, windowMs: 10 * 60 * 1000 });
   if (!rl.ok) {
     return { success: false, message: `Too many attempts. Try again in ${rl.retryAfterSec}s.` };
+  }
+
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
   }
 
   const values = {
@@ -61,6 +68,12 @@ export async function loginAdminAction(_: ActionState, formData: FormData): Prom
   const rl = await rateLimit("login-admin", { limit: 5, windowMs: 10 * 60 * 1000 });
   if (!rl.ok) {
     return { success: false, message: `Too many attempts. Try again in ${rl.retryAfterSec}s.` };
+  }
+
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
   }
 
   const values = {
@@ -116,5 +129,6 @@ export async function loginAdminAction(_: ActionState, formData: FormData): Prom
 export async function logoutAction() {
   const session = await requireSession();
   await clearSessionCookie();
-  redirect(session.role === "ADMIN" ? "/login/admin" : "/login/user");
+  // Always redirect to the single login page
+  redirect("/login/user");
 }

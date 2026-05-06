@@ -15,10 +15,17 @@ import {
   userProfileSchema,
   zodErrors,
 } from "@/lib/validations";
+import { validateCSRFToken } from "@/lib/csrf";
 import type { ActionState } from "@/types";
 
 export async function createTicketAction(_: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireSession("USER");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const values = {
     category: String(formData.get("category") || ""),
     subject: String(formData.get("subject") || ""),
@@ -88,6 +95,12 @@ export async function replyToTicketAction(
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireSession("USER");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const parsed = replySchema.safeParse({
     message: String(formData.get("message") || ""),
   });
@@ -158,6 +171,12 @@ export async function updateUserProfileAction(
   formData: FormData,
 ): Promise<ActionState> {
   const session = await requireSession("USER");
+  
+  // Validate CSRF token
+  const csrfValid = await validateCSRFToken(formData);
+  if (!csrfValid) {
+    return { success: false, message: "Security check failed. Please refresh and try again." };
+  }
   const values = {
     id: String(formData.get("id") || ""),
     name: String(formData.get("name") || ""),
